@@ -1,0 +1,78 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=77", "setuptools-scm>=8.1"]
+
+[project]
+name = "types-httpretty"
+dynamic = ["version"]
+description = "Typing stubs for HTTPretty"
+readme = "README.md"
+keywords = ["httpretty", "stubs", "typing"]
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Adam Dangoor", email = "adamdangoor@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Stubs Only",
+]
+dependencies = ["typing-extensions>=4.10"]
+optional-dependencies.dev = [
+    "build==1.3.0",
+    "check-manifest==0.51",
+    "check-wheel-contents==0.6.3",
+    "httpretty==1.1.4",
+    "mypy==2.3.0",
+    "pyright==1.1.411",
+    "pyroma==5.0.1",
+    "pytest==9.1.1",
+    "ruff==0.15.22",
+    "twine==6.2.0",
+]
+optional-dependencies.release = ["check-wheel-contents==0.6.3"]
+urls.Source = "https://github.com/adamtheturtle/types-httpretty"
+urls.Issues = "https://github.com/adamtheturtle/types-httpretty/issues"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["httpretty-stubs"]
+
+[tool.setuptools.package-data]
+"httpretty-stubs" = ["*.pyi"]
+
+[tool.setuptools_scm]
+fallback_version = "1.1.4.20260720"
+
+[tool.ruff]
+line-length = 79
+lint.select = ["ALL"]
+lint.ignore = ["COM812", "D205", "D212", "ISC001", "PYI021"]
+lint.per-file-ignores."httpretty-stubs/**" = [
+    "ANN401",
+    "N801",
+    "N802",
+    "PYI029",
+]
+lint.per-file-ignores."tests/**" = ["D100", "D103", "S101"]
+lint.pydocstyle.convention = "google"
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+[tool.pyright]
+include = ["tests/typecheck"]
+pythonVersion = "3.10"
+reportMissingModuleSource = false
+typeCheckingMode = "strict"
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers"]
+testpaths = ["tests"]

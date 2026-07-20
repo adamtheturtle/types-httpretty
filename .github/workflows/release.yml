@@ -1,0 +1,68 @@
+---
+name: Release
+
+on: workflow_dispatch
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Publish a release
+    runs-on: ubuntu-latest
+
+    # PyPI trusted publishing is scoped to this environment.
+    environment: release
+
+    permissions:
+      id-token: write  # Required by PyPI trusted publishing.
+      contents: write  # Required to create the tag and GitHub release.
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          # Fetch tags so setuptools-scm can derive the package version.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990  # v8.3.2
+        with:
+          enable-cache: false
+
+      - name: Calculate version
+        id: version
+        # PEP 440 version: HTTPretty version followed by the release date.
+        run: echo "version=1.1.4.$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Tag the release
+        id: tag_version
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.version.outputs.version }}
+          tag_prefix: ''
+
+      - name: Create a GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+        run: gh release create "$NEW_TAG" --generate-notes --latest
+
+      - name: Build a wheel and source tarball
+        env:
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          git fetch --tags
+          git checkout "$NEW_TAG"
+          uv build --sdist --wheel --out-dir dist/
+          uv run --extra=release check-wheel-contents dist/*.whl
+
+      - name: Publish distribution to PyPI
+        # Configure the GitHub environment as a trusted publisher on PyPI.
+        uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247  # release/v1
+        with:
+          verbose: true
