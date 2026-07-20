@@ -35,8 +35,15 @@ jobs:
 
       - name: Calculate version
         id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
         # PEP 440 version: HTTPretty version followed by the release date.
-        run: echo "version=1.1.4.$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        run: |
+          version="1.1.4.$(date -u +%Y%m%d)"
+          if (( RUN_NUMBER > 1 )); then
+            version="$version.post$((RUN_NUMBER - 1))"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Tag the release
         id: tag_version

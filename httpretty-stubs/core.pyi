@@ -14,7 +14,8 @@ _HTTPMethod: TypeAlias = Literal[
     "GET", "PUT", "POST", "DELETE", "HEAD", "PATCH", "OPTIONS", "CONNECT"
 ]
 _URI: TypeAlias = str | re.Pattern[str]
-_Headers: TypeAlias = Mapping[str, str]
+_HeaderValue: TypeAlias = str | int | bool | None
+_Headers: TypeAlias = Mapping[str, _HeaderValue]
 _Body: TypeAlias = str | bytes
 _ResponseBody: TypeAlias = (
     _Body
@@ -72,7 +73,7 @@ class Entry(HttpBaseClass):
     forcing_headers: dict[str, str]
     def __init__(
         self,
-        method: _HTTPMethod,
+        method: str,
         uri: str,
         body: _ResponseBody,
         adding_headers: _Headers | None = None,
@@ -180,7 +181,7 @@ class httpretty(HttpBaseClass):
     @classmethod
     def register_uri(
         cls,
-        method: _HTTPMethod,
+        method: str,
         uri: _URI,
         body: _ResponseBody = '{"message": "HTTPretty :)"}',
         adding_headers: _Headers | None = None,
